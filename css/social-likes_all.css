@@ -1,0 +1,12 @@
+.social-likes__header-container {
+	margin-top: 1em;
+}
+
+.social-likes__header-content {
+	font-weight: bold;
+	font-size: medium;
+}
+
+.social-likes {
+	margin: 0.5em -0.5em !important;
+}
