@@ -45,11 +45,24 @@ class SocialLikes extends Module
         'flat'
     );
 
+    /**
+     * @var array options list for general tab (key => default value)
+     */
+    protected static $generalTabOptions = array(
+        'style' => 'classic',
+        'header' => 1,
+        'layout' => 'default',
+        'counters' => 1,
+        'zeroes' => 0,
+        'autoinit' => 1,
+        'id_attr' => '',
+    );
+
     public function __construct()
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.1.0';
+        $this->version = '0.2.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
@@ -102,6 +115,15 @@ class SocialLikes extends Module
      */
     protected function updateDefaultOptions()
     {
+        // update general tab default options
+        foreach (self::$generalTabOptions as $optionsName => $optionsDefault) {
+            $this->setConfigFieldValue(
+                $this->buildSettingsKey($optionsName),
+                $optionsDefault
+            );
+        }
+
+        // update network default options
         foreach (self::$networks as $networkName => $networkProperties) {
             $this->setConfigFieldValue(
                 $this->buildSettingsKey($networkName),
@@ -228,6 +250,72 @@ class SocialLikes extends Module
             'tab' => 'general'
         );
 
+        // add options for layout
+        $fields[] = array(
+            'type' => 'select',
+            'label' => $this->l('Layout'),
+            'name' => $this->buildSettingsKey('layout'),
+            'options' => array(
+                'query' => array(
+                    array(
+                        'id' => 'default',
+                        'name' => 'Default (Horizontal line)'
+                    ),
+                    array(
+                        'id' => 'vertical',
+                        'name' => 'Vertical (Vertical line)'
+                    ),
+                    array(
+                        'id' => 'single',
+                        'name' => 'Single (Show only one icon)'
+                    ),
+                    array(
+                        'id' => 'notext',
+                        'name' => 'Icons (No text)'
+                    )
+                ),
+                'id' => 'id',
+                'name' => 'name',
+            ),
+            'tab' => 'general'
+        );
+
+        // switch options
+        $switches = array(
+            'header' => 'Show module header',
+            'counters' => 'Show counters',
+            'zeroes' => 'Show zero counters',
+            'autoinit' => 'Use autoinit'
+        );
+        foreach ($switches as $switchName => $switchLabel) {
+            $fields[] = array(
+                'type' => 'switch',
+                'label' => $switchLabel,
+                'name' => $this->buildSettingsKey($switchName),
+                'values' => array(
+                    array(
+                        'id' => 'no',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    ),
+                    array(
+                        'id' => 'yes',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    )
+                ),
+                'tab' => 'general'
+            );
+        }
+
+        // id_attr option
+        $fields[] = array(
+            'type' => 'text',
+            'label' => $this->l('ID attribute'),
+            'name' => $this->buildSettingsKey('id_attr'),
+            'tab' => 'general'
+        );
+
         return $fields;
     }
 
@@ -328,18 +416,19 @@ class SocialLikes extends Module
     {
         $result = array();
 
-        $networksList = $this->getNetworksList();
-
-        // set or get styles option
-        $result = array_merge(
-            $result,
-            $this->processConfigFieldValue(
-                $this->buildSettingsKey('style'),
-                $method
-            )
-        );
+        // set or get general tab options
+        foreach (array_keys(self::$generalTabOptions) as $optionsName) {
+            $result = array_merge(
+                $result,
+                $this->processConfigFieldValue(
+                    $this->buildSettingsKey($optionsName),
+                    $method
+                )
+            );
+        }
 
         // set or get networks options
+        $networksList = $this->getNetworksList();
         foreach ($networksList as $networkName) {
             $result = array_merge(
                 $result,
@@ -503,14 +592,39 @@ class SocialLikes extends Module
      */
     protected function getConfigFieldValuesForTemplate()
     {
-        $values = array();
+        $values = array(
+            'properties' => array(),
+            'sociallikes' => array()
+        );
 
+        // get general options
+        foreach (array_keys(self::$generalTabOptions) as $optionsName) {
+            $values['properties'][$optionsName] = $this->getConfigFieldValue(
+                $this->buildSettingsKey($optionsName)
+            );
+        }
+
+        // additional options
+        $blockClasses = array();
+        if (!empty($values['properties']['autoinit'])) {
+            $blockClasses[] = 'social-likes';
+        }
+        if ($values['properties']['layout'] != 'default') {
+            $blockClasses[] = 'social-likes_' . $values['properties']['layout'];
+        }
+        $values['properties']['block_classes'] = implode(' ', $blockClasses);
+
+        if ($values['properties']['layout'] == 'single') {
+            $values['properties']['single_title'] = $this->l('Share');
+        }
+
+        // build enabled social network list
         foreach (self::$networks as $networkName => $networkProperties) {
             $isDisplay = $this->getConfigFieldValue(
                 $this->buildSettingsKey($networkName)
             );
-            if($isDisplay) {
-                $values[$networkName] = array(
+            if ($isDisplay) {
+                $values['sociallikes'][$networkName] = array(
                     'networkLabel' => $this->l($networkName)
                 );
             }
@@ -536,9 +650,9 @@ class SocialLikes extends Module
         $cacheId = 'sociallikes|'
             . (!empty($product->id) ? $product->id : '');
 
-        $this->context->smarty->assign(array(
-            'sociallikes' => $this->getConfigFieldValuesForTemplate()
-        ));
+        $this->context->smarty->assign(
+            $this->getConfigFieldValuesForTemplate()
+        );
 
         return $this->display(
             __FILE__,
