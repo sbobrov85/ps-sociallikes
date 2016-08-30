@@ -16,7 +16,18 @@ class SocialLikes extends Module
      */
     protected static $networks = array(
         'facebook' => array(),
-        'twitter' => array(),
+        'twitter' => array(
+            'options' => array(
+                'via' => array(
+                    'type' => 'text',
+                    'label' => 'Via (site or your own)'
+                ),
+                'related' => array(
+                    'type' => 'text',
+                    'label' => 'Related (any other twitter)'
+                )
+            )
+        ),
         'mailru' => array(),
         'vkontakte' => array(
             'enabled_by_default' => true
@@ -25,7 +36,14 @@ class SocialLikes extends Module
             'enabled_by_default' => true
         ),
         'plusone' => array(),
-        'pinterest' => array(),
+        'pinterest' => array(
+            'options' => array(
+                'media' => array(
+                    'type' => 'text',
+                    'label' => 'Specify image url'
+                )
+            )
+        ),
     );
 
     /**
@@ -62,7 +80,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.2.0';
+        $this->version = '0.3.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
@@ -128,6 +146,10 @@ class SocialLikes extends Module
             $this->setConfigFieldValue(
                 $this->buildSettingsKey($networkName),
                 (int) !empty($networkProperties['enabled_by_default'])
+            );
+            $this->setConfigFieldValue(
+                $this->buildSettingsKey($networkName . '_text'),
+                $networkName
             );
         }
     }
@@ -320,6 +342,77 @@ class SocialLikes extends Module
     }
 
     /**
+     * Get form fields for networks options
+     * @param string $networkName social network name
+     * @param array $networkProperties additional options for network
+     * @return array
+     */
+    protected function getFormFieldsNetwork($networkName, $networkProperties)
+    {
+        $fields = array();
+
+        // disable|enable
+        $fields[] = array(
+            'type' => 'switch',
+            'label' => $networkName,
+            'name' => $this->buildSettingsKey($networkName),
+            'values' => array(
+                array(
+                    'id' => Tools::strtolower($networkName).'_active_on',
+                    'value' => 1,
+                    'label' => $this->l('Enabled')
+                ),
+                array(
+                    'id' => Tools::strtolower($networkName).'_active_off',
+                    'value' => 0,
+                    'label' => $this->l('Disabled')
+                )
+            ),
+            'tab' => $networkName
+        );
+
+        $fields[] = array(
+            'type' => 'text',
+            'label' => $this->l('Text'),
+            'name' => $this->buildSettingsKey($networkName . '_text'),
+            'tab' => $networkName
+        );
+
+        $fields[] = array(
+            'type' => 'text',
+            'label' => $this->l('Title'),
+            'name' => $this->buildSettingsKey($networkName . '_title'),
+            'tab' => $networkName
+        );
+
+        // custom options for network
+        if (!empty($networkProperties['options']) &&
+            is_array($networkProperties['options'])) {
+            foreach ($networkProperties['options'] as $optionName => $optionParams) {
+                if (!empty($optionParams)) {
+                    $field = array();
+
+                    switch ($optionParams['type']) {
+                        case 'text':
+                            $field['type'] = $optionParams['type'];
+                        break;
+                    }
+
+                    $field['label'] = $this->l($optionParams['label']);
+                    $field['name'] = $this->buildSettingsKey(
+                        $networkName . '_' . $optionName
+                    );
+                    $field['tab'] = $networkName;
+
+                    $fields[] = $field;
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * Get settings form fields
      * @return array
      */
@@ -330,29 +423,11 @@ class SocialLikes extends Module
         $fields = array_merge($fields, $this->getFormFieldsGeneral());
 
         // networks options
-        $networksList = $this->getNetworksList();
-
-        foreach ($networksList as $networkName) {
-            $field = array(
-                'type' => 'switch',
-                'label' => $networkName,
-                'name' => $this->buildSettingsKey($networkName),
-                'values' => array(
-                    array(
-                        'id' => Tools::strtolower($networkName).'_active_on',
-                        'value' => 1,
-                        'label' => $this->l('Enabled')
-                    ),
-                    array(
-                        'id' => Tools::strtolower($networkName).'_active_off',
-                        'value' => 0,
-                        'label' => $this->l('Disabled')
-                    )
-                ),
-                'tab' => $networkName
+        foreach (self::$networks as $networkName => $networkProperties) {
+            $fields = array_merge(
+                $fields,
+                $this->getFormFieldsNetwork($networkName, $networkProperties)
             );
-
-            $fields[] = $field;
         }
 
         return $fields;
@@ -428,15 +503,37 @@ class SocialLikes extends Module
         }
 
         // set or get networks options
-        $networksList = $this->getNetworksList();
-        foreach ($networksList as $networkName) {
+        foreach (self::$networks as $networkName => $networkProperties) {
             $result = array_merge(
                 $result,
                 $this->processConfigFieldValue(
                     $this->buildSettingsKey($networkName),
                     $method
+                ),
+                $this->processConfigFieldValue(
+                    $this->buildSettingsKey($networkName . '_text'),
+                    $method
+                ),
+                $this->processConfigFieldValue(
+                    $this->buildSettingsKey($networkName . '_title'),
+                    $method
                 )
             );
+            if (!empty($networkProperties['options']) &&
+                is_array($networkProperties['options'])
+            ) {
+                foreach (array_keys($networkProperties['options']) as $optionName) {
+                    $result = array_merge(
+                        $result,
+                        $this->processConfigFieldValue(
+                            $this->buildSettingsKey(
+                                $networkName . '_' . $optionName
+                            ),
+                            $method
+                        )
+                    );
+                }
+            }
         }
 
         return $result;
@@ -598,9 +695,9 @@ class SocialLikes extends Module
         );
 
         // get general options
-        foreach (array_keys(self::$generalTabOptions) as $optionsName) {
-            $values['properties'][$optionsName] = $this->getConfigFieldValue(
-                $this->buildSettingsKey($optionsName)
+        foreach (array_keys(self::$generalTabOptions) as $optionName) {
+            $values['properties'][$optionName] = $this->getConfigFieldValue(
+                $this->buildSettingsKey($optionName)
             );
         }
 
@@ -625,8 +722,26 @@ class SocialLikes extends Module
             );
             if ($isDisplay) {
                 $values['sociallikes'][$networkName] = array(
-                    'networkLabel' => $this->l($networkName)
+                    'text' => $this->getConfigFieldValue(
+                        $this->buildSettingsKey($networkName . '_text')
+                    ),
+                    'title' => $this->getConfigFieldValue(
+                        $this->buildSettingsKey($networkName . '_title')
+                    ),
                 );
+                if (!empty($networkProperties['options']) &&
+                    is_array($networkProperties['options'])
+                ) {
+                    $specificOptions = array();
+                    foreach (array_keys($networkProperties['options']) as $optionName) {
+                        $specificOptions[$optionName] = $this->getConfigFieldValue(
+                            $this->buildSettingsKey(
+                                $networkName . '_' . $optionName
+                            )
+                        );
+                    }
+                    $values['sociallikes'][$networkName]['specific'] = $specificOptions;
+                }
             }
         }
 

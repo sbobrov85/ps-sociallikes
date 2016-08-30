@@ -18,9 +18,15 @@
     {foreach $sociallikes as $networkName => $networkProperties}
     <div
         class="{$networkName}"
+        {($networkProperties.title) ? "title=\"`$networkProperties.title`\"" : ''}
+        {if $networkProperties.specific}
+            {foreach $networkProperties.specific as $specificName => $specificValue}
+                data-{$specificName}="{$specificValue}"
+            {/foreach}
+        {/if}
     >
         {if $properties.layout != 'notext'}
-        {$networkProperties.networkLabel}
+        {$networkProperties.text}
         {/if}
     </div>
     {/foreach}
