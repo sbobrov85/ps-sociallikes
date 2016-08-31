@@ -409,6 +409,13 @@ class SocialLikes extends Module
             }
         }
 
+        $fields[] = array(
+            'type' => 'text',
+            'label' => $this->l('Sort priority'),
+            'name' => $this->buildSettingsKey($networkName . '_sort'),
+            'tab' => $networkName
+        );
+
         return $fields;
     }
 
@@ -516,6 +523,10 @@ class SocialLikes extends Module
                 ),
                 $this->processConfigFieldValue(
                     $this->buildSettingsKey($networkName . '_title'),
+                    $method
+                ),
+                $this->processConfigFieldValue(
+                    $this->buildSettingsKey($networkName . '_sort'),
                     $method
                 )
             );
@@ -728,6 +739,9 @@ class SocialLikes extends Module
                     'title' => $this->getConfigFieldValue(
                         $this->buildSettingsKey($networkName . '_title')
                     ),
+                    'sort' => $this->getConfigFieldValue(
+                        $this->buildSettingsKey($networkName . '_sort')
+                    ),
                 );
                 if (!empty($networkProperties['options']) &&
                     is_array($networkProperties['options'])
@@ -744,6 +758,10 @@ class SocialLikes extends Module
                 }
             }
         }
+
+        uasort($values['sociallikes'], function($a, $b) {
+            return (int) $a['sort'] <= (int) $b['sort'] ? 1 : -1;
+        });
 
         return $values;
     }
