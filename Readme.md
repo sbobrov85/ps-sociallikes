@@ -1,13 +1,13 @@
 # Prestashop Social likes (Share) buttons
 
-Prestashop module for add social share buttons like: Facebook, Vkontakte, Twitter, Odnoklassniki, Google+, etc on products page.
-
-![](https://github.com/sbobrov85/ps-sociallikes/blob/master/sociallikes.jpg)
+Prestashop module for add social share buttons like: Facebook, Vkontakte, Twitter, Odnoklassniki, Google+, Pinterest, etc on products page.
 
 Support two language:
 
 * English
 * Russian
+
+![](https://github.com/sbobrov85/ps-sociallikes/blob/master/sociallikes.jpg)
 
 ## Installation
 
