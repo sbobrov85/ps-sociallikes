@@ -11,8 +11,8 @@ Support two language:
 
 ## Installation
 
-1. Download [latest stable releases](https://github.com/sbobrov85/ps-sociallikes/releases/latest) as sociallikes.zip or sociallikes.tar.gz
-1. Check archive name. Need sociallikes for correct work!
+1. Clone this repos into sociallikes directory (git clone https://github.com/sbobrov85/ps-sociallikes.git ./sociallikes ) or download as zip archives, extract and rename directory to sociallikes.
+1. Create zip or tar.gz archive containing sociallikes folder
 1. Logging with admin privileges in you Prestashop backend
 1. Goto "Modules and Services"
 1. Press "Add a new module" top toolbar button
