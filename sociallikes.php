@@ -232,12 +232,12 @@ class SocialLikes extends Module
     {
         $tabs = array();
 
-        $tabs['general'] = 'general options';
+        $tabs['general'] = $this->l('General options');
 
         $networksList = $this->getNetworksList();
 
         foreach ($networksList as $networkName) {
-            $tabs[$networkName] = $networkName . ' options';
+            $tabs[$networkName] = $networkName;
         }
 
         return $tabs;
@@ -261,7 +261,7 @@ class SocialLikes extends Module
         }
         $fields[] = array(
             'type' => 'select',
-            'label' => 'Buttons style',
+            'label' => $this->l('Buttons style'),
             'name' => $this->buildSettingsKey('style'),
             'options' => array(
                 'query' => $stylesValues,
@@ -281,19 +281,19 @@ class SocialLikes extends Module
                 'query' => array(
                     array(
                         'id' => 'default',
-                        'name' => 'Default (Horizontal line)'
+                        'name' => $this->l('Default (Horizontal line)')
                     ),
                     array(
                         'id' => 'vertical',
-                        'name' => 'Vertical (Vertical line)'
+                        'name' => $this->l('Vertical (Vertical line)')
                     ),
                     array(
                         'id' => 'single',
-                        'name' => 'Single (Show only one icon)'
+                        'name' => $this->l('Single (Show only one icon)')
                     ),
                     array(
                         'id' => 'notext',
-                        'name' => 'Icons (No text)'
+                        'name' => $this->l('Icons (No text)')
                     )
                 ),
                 'id' => 'id',
@@ -304,10 +304,10 @@ class SocialLikes extends Module
 
         // switch options
         $switches = array(
-            'header' => 'Show module header',
-            'counters' => 'Show counters',
-            'zeroes' => 'Show zero counters',
-            'autoinit' => 'Use autoinit'
+            'header' => $this->l('Show module header'),
+            'counters' => $this->l('Show counters'),
+            'zeroes' => $this->l('Show zero counters'),
+            'autoinit' => $this->l('Use autoinit')
         );
         foreach ($switches as $switchName => $switchLabel) {
             $fields[] = array(
@@ -354,8 +354,8 @@ class SocialLikes extends Module
         // disable|enable
         $fields[] = array(
             'type' => 'switch',
-            'label' => $networkName,
-            'name' => $this->buildSettingsKey($networkName),
+            'label' => $this->l('Display button'),
+            'name' => $networkName,
             'values' => array(
                 array(
                     'id' => Tools::strtolower($networkName).'_active_on',
@@ -724,6 +724,10 @@ class SocialLikes extends Module
 
         if ($values['properties']['layout'] == 'single') {
             $values['properties']['single_title'] = $this->l('Share');
+        }
+
+        if ($value['properties']['header']) {
+            $values['properties']['header_title'] = $this->l('Share with:');
         }
 
         // build enabled social network list

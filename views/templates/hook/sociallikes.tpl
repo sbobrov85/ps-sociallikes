@@ -3,7 +3,7 @@
 {if $properties.header}
 <div class="social-likes__header-container">
     <span class="social-likes__header-content">
-        {l s="Share with:"}
+        {$properties.header_label}
     </span>
 </div>
 {/if}
