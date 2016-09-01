@@ -26,4 +26,4 @@ $_MODULE['<{sociallikes}prestashop>sociallikes_b78a3223503896721cca1303f776159b'
 $_MODULE['<{sociallikes}prestashop>sociallikes_8fd33c20083297d105a5c5714d39d8ca'] = 'Приоритет сортировки';
 $_MODULE['<{sociallikes}prestashop>sociallikes_c9cc8cce247e49bae79f15173ce97354'] = 'Сохранить';
 $_MODULE['<{sociallikes}prestashop>sociallikes_5a95a425f74314a96f13a2f136992178'] = 'Поделиться';
-$_MODULE['<{sociallikes}prestashop>sociallikes_cfa65f14f40b96d4ce76931959687440'] = 'Поделиться';
+$_MODULE['<{sociallikes}prestashop>sociallikes_f27e4e46028ca30341ff820dbe4eae4e'] = 'Поделиться';

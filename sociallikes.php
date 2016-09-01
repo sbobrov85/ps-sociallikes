@@ -355,7 +355,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'switch',
             'label' => $this->l('Display button'),
-            'name' => $networkName,
+            'name' => $this->buildSettingsKey($networkName),
             'values' => array(
                 array(
                     'id' => Tools::strtolower($networkName).'_active_on',
@@ -726,8 +726,8 @@ class SocialLikes extends Module
             $values['properties']['single_title'] = $this->l('Share');
         }
 
-        if ($value['properties']['header']) {
-            $values['properties']['header_title'] = $this->l('Share with:');
+        if ($values['properties']['header']) {
+            $values['properties']['header_title'] = $this->l('Share with');
         }
 
         // build enabled social network list
