@@ -80,7 +80,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.5.3';
+        $this->version = '0.5.4';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
@@ -171,7 +171,7 @@ class SocialLikes extends Module
      */
     public function install()
     {
-        if(!parent::install()) {
+        if (!parent::install()) {
             return false;
         }
 
@@ -395,7 +395,7 @@ class SocialLikes extends Module
                     switch ($optionParams['type']) {
                         case 'text':
                             $field['type'] = $optionParams['type'];
-                        break;
+                            break;
                     }
 
                     $field['label'] = $this->l($optionParams['label']);
@@ -460,7 +460,7 @@ class SocialLikes extends Module
      */
     protected function setConfigFieldValue($settingsKey, $value = null)
     {
-        if(!isset($value)) {
+        if (!isset($value)) {
             $value = Tools::getValue($settingsKey);
         }
 
@@ -627,9 +627,11 @@ class SocialLikes extends Module
     protected function getProductProperties($product)
     {
         $properties = array(
-            'price' => Tools::ps_round($product->getPrice(
-                !Product::getTaxCalculationMethod(
-                    (int) $this->context->cookie->id_customer),
+            'price' => Tools::ps_round(
+                $product->getPrice(
+                    !Product::getTaxCalculationMethod(
+                        (int) $this->context->cookie->id_customer
+                    ),
                     null
                 ),
                 _PS_PRICE_COMPUTE_PRECISION_
@@ -763,7 +765,7 @@ class SocialLikes extends Module
             }
         }
 
-        uasort($values['sociallikes'], function($a, $b) {
+        uasort($values['sociallikes'], function ($a, $b) {
             return (int) $a['sort'] <= (int) $b['sort'] ? 1 : -1;
         });
 
