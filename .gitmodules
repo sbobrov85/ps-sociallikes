@@ -1,0 +1,3 @@
+[submodule "helpers"]
+	path = helpers
+	url = https://github.com/sbobrov85/ps-module-helper.git
