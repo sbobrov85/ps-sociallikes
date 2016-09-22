@@ -1,15 +1,13 @@
 <?php
+
+require_once 'helpers/ModuleHelper.php';
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
 class SocialLikes extends Module
 {
-
-    /**
-     * @const prefix for module settings keys
-     */
-    const SETTINGS_PREFIX = 'PS_SL_';
 
     /**
      * @var array settings list for supported social networks
@@ -80,7 +78,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.5.4';
+        $this->version = '0.6.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
@@ -101,6 +99,8 @@ class SocialLikes extends Module
         if (!Configuration::get('MYMODULE_NAME')) {
             $this->warning = $this->l('No name provided');
         }
+
+        ModuleHelper::setSettingsPrefix('PS_SL');
     }
 
     /**
@@ -119,36 +119,23 @@ class SocialLikes extends Module
     }
 
     /**
-     * Build module settings key
-     * @param string $paramName param name
-     * @return string full settings key
-     */
-    protected function buildSettingsKey($paramName)
-    {
-        return self::SETTINGS_PREFIX . Tools::strtoupper($paramName);
-    }
-
-    /**
      * Activate every option by default
      */
     protected function updateDefaultOptions()
     {
         // update general tab default options
         foreach (self::$generalTabOptions as $optionsName => $optionsDefault) {
-            $this->setConfigFieldValue(
-                $this->buildSettingsKey($optionsName),
-                $optionsDefault
-            );
+            ModuleHelper::setConfigFieldValue($optionsName, $optionsDefault);
         }
 
         // update network default options
         foreach (self::$networks as $networkName => $networkProperties) {
-            $this->setConfigFieldValue(
-                $this->buildSettingsKey($networkName),
+            ModuleHelper::setConfigFieldValue(
+                $networkName,
                 (int) !empty($networkProperties['enabled_by_default'])
             );
-            $this->setConfigFieldValue(
-                $this->buildSettingsKey($networkName . '_text'),
+            ModuleHelper::setConfigFieldValue(
+                $networkName . '_text',
                 $networkName
             );
         }
@@ -262,7 +249,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'select',
             'label' => $this->l('Buttons style'),
-            'name' => $this->buildSettingsKey('style'),
+            'name' => ModuleHelper::buildSettingsKey('style'),
             'options' => array(
                 'query' => $stylesValues,
                 'id' => 'id',
@@ -276,7 +263,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'select',
             'label' => $this->l('Layout'),
-            'name' => $this->buildSettingsKey('layout'),
+            'name' => ModuleHelper::buildSettingsKey('layout'),
             'options' => array(
                 'query' => array(
                     array(
@@ -313,7 +300,7 @@ class SocialLikes extends Module
             $fields[] = array(
                 'type' => 'switch',
                 'label' => $switchLabel,
-                'name' => $this->buildSettingsKey($switchName),
+                'name' => ModuleHelper::buildSettingsKey($switchName),
                 'values' => array(
                     array(
                         'id' => 'no',
@@ -334,7 +321,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('ID attribute'),
-            'name' => $this->buildSettingsKey('id_attr'),
+            'name' => ModuleHelper::buildSettingsKey('id_attr'),
             'tab' => 'general'
         );
 
@@ -355,7 +342,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'switch',
             'label' => $this->l('Display button'),
-            'name' => $this->buildSettingsKey($networkName),
+            'name' => ModuleHelper::buildSettingsKey($networkName),
             'values' => array(
                 array(
                     'id' => Tools::strtolower($networkName).'_active_on',
@@ -374,14 +361,14 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Text'),
-            'name' => $this->buildSettingsKey($networkName . '_text'),
+            'name' => ModuleHelper::buildSettingsKey($networkName . '_text'),
             'tab' => $networkName
         );
 
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Title'),
-            'name' => $this->buildSettingsKey($networkName . '_title'),
+            'name' => ModuleHelper::buildSettingsKey($networkName . '_title'),
             'tab' => $networkName
         );
 
@@ -399,7 +386,7 @@ class SocialLikes extends Module
                     }
 
                     $field['label'] = $this->l($optionParams['label']);
-                    $field['name'] = $this->buildSettingsKey(
+                    $field['name'] = ModuleHelper::buildSettingsKey(
                         $networkName . '_' . $optionName
                     );
                     $field['tab'] = $networkName;
@@ -412,7 +399,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Sort priority'),
-            'name' => $this->buildSettingsKey($networkName . '_sort'),
+            'name' => ModuleHelper::buildSettingsKey($networkName . '_sort'),
             'tab' => $networkName
         );
 
@@ -441,49 +428,22 @@ class SocialLikes extends Module
     }
 
     /**
-     * Get config field value by key
-     * @param string $settingsKey config key
-     * @return mixed config value
-     */
-    protected function getConfigFieldValue($settingsKey)
-    {
-        return Tools::getValue(
-            $settingsKey,
-            Configuration::get($settingsKey)
-        );
-    }
-
-    /**
-     * Set config field value by key
-     * @param string $settingsKey config key
-     * @param mixed $value value for set, if null then read from request
-     */
-    protected function setConfigFieldValue($settingsKey, $value = null)
-    {
-        if (!isset($value)) {
-            $value = Tools::getValue($settingsKey);
-        }
-
-        Configuration::updateValue($settingsKey, $value);
-    }
-
-    /**
      * Set or get config filter value
-     * @param string $settingsKey values settings key
+     * @param string $paramName param name
      * @param string $method 'update' for set or any for get
      * @return array empty for set or key => value pair for get
      */
-    protected function processConfigFieldValue($settingsKey, $method)
+    protected function processConfigFieldValue($paramName, $method)
     {
         $result = array();
 
         switch ($method) {
             case 'update':
-                $this->setConfigFieldValue($settingsKey);
+                ModuleHelper::setConfigFieldValue($paramName);
                 break;
             default:
-                $result[$settingsKey] = $this
-                    ->getConfigFieldValue($settingsKey);
+                $settingsKey = ModuleHelper::buildSettingsKey($paramName);
+                $result[$settingsKey] = ModuleHelper::getConfigFieldValue($paramName);
         }
 
         return $result;
@@ -502,10 +462,7 @@ class SocialLikes extends Module
         foreach (array_keys(self::$generalTabOptions) as $optionsName) {
             $result = array_merge(
                 $result,
-                $this->processConfigFieldValue(
-                    $this->buildSettingsKey($optionsName),
-                    $method
-                )
+                $this->processConfigFieldValue($optionsName, $method)
             );
         }
 
@@ -513,22 +470,10 @@ class SocialLikes extends Module
         foreach (self::$networks as $networkName => $networkProperties) {
             $result = array_merge(
                 $result,
-                $this->processConfigFieldValue(
-                    $this->buildSettingsKey($networkName),
-                    $method
-                ),
-                $this->processConfigFieldValue(
-                    $this->buildSettingsKey($networkName . '_text'),
-                    $method
-                ),
-                $this->processConfigFieldValue(
-                    $this->buildSettingsKey($networkName . '_title'),
-                    $method
-                ),
-                $this->processConfigFieldValue(
-                    $this->buildSettingsKey($networkName . '_sort'),
-                    $method
-                )
+                $this->processConfigFieldValue($networkName, $method),
+                $this->processConfigFieldValue($networkName . '_text', $method),
+                $this->processConfigFieldValue($networkName . '_title', $method),
+                $this->processConfigFieldValue($networkName . '_sort', $method)
             );
             if (!empty($networkProperties['options']) &&
                 is_array($networkProperties['options'])
@@ -537,9 +482,7 @@ class SocialLikes extends Module
                     $result = array_merge(
                         $result,
                         $this->processConfigFieldValue(
-                            $this->buildSettingsKey(
-                                $networkName . '_' . $optionName
-                            ),
+                            $networkName . '_' . $optionName,
                             $method
                         )
                     );
@@ -605,7 +548,7 @@ class SocialLikes extends Module
         );
 
         // add selected buttons css
-        $style = $this->getConfigFieldValue($this->buildSettingsKey('style'));
+        $style = ModuleHelper::getConfigFieldValue('style');
         if (!$style || !in_array($style, self::$supportedStyles)) {
             $style = 'classic';
         }
@@ -709,9 +652,7 @@ class SocialLikes extends Module
 
         // get general options
         foreach (array_keys(self::$generalTabOptions) as $optionName) {
-            $values['properties'][$optionName] = $this->getConfigFieldValue(
-                $this->buildSettingsKey($optionName)
-            );
+            $values['properties'][$optionName] = ModuleHelper::getConfigFieldValue($optionName);
         }
 
         // additional options
@@ -734,30 +675,21 @@ class SocialLikes extends Module
 
         // build enabled social network list
         foreach (self::$networks as $networkName => $networkProperties) {
-            $isDisplay = $this->getConfigFieldValue(
-                $this->buildSettingsKey($networkName)
-            );
+            $isDisplay = ModuleHelper::getConfigFieldValue($networkName);
             if ($isDisplay) {
-                $values['sociallikes'][$networkName] = array(
-                    'text' => $this->getConfigFieldValue(
-                        $this->buildSettingsKey($networkName . '_text')
-                    ),
-                    'title' => $this->getConfigFieldValue(
-                        $this->buildSettingsKey($networkName . '_title')
-                    ),
-                    'sort' => $this->getConfigFieldValue(
-                        $this->buildSettingsKey($networkName . '_sort')
-                    ),
-                );
+                foreach (array('text', 'title', 'sort') as $valueName) {
+                    $value = ModuleHelper::getConfigFieldValue(
+                        $networkName . '_' . $valueName
+                    );
+                    $values['sociallikes'][$networkName][$valueName] = $value;
+                }
                 if (!empty($networkProperties['options']) &&
                     is_array($networkProperties['options'])
                 ) {
                     $specificOptions = array();
                     foreach (array_keys($networkProperties['options']) as $optionName) {
-                        $specificOptions[$optionName] = $this->getConfigFieldValue(
-                            $this->buildSettingsKey(
-                                $networkName . '_' . $optionName
-                            )
+                        $specificOptions[$optionName] = ModuleHelper::getConfigFieldValue(
+                            $networkName . '_' . $optionName
                         );
                     }
                     $values['sociallikes'][$networkName]['specific'] = $specificOptions;
