@@ -1,6 +1,8 @@
 <?php
 
-require_once 'helpers/ModuleHelper.php';
+if (!class_exists('ModuleHelper')) {
+    require_once 'helpers/ModuleHelper.php';
+}
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -78,7 +80,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.6.0';
+        $this->version = '0.6.2';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
