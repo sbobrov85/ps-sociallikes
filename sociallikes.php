@@ -96,10 +96,6 @@ class SocialLikes extends Module
                 . ' product page.'
         );
 
-        if (!Configuration::get('MYMODULE_NAME')) {
-            $this->warning = $this->l('No name provided');
-        }
-
         ModuleHelper::setSettingsPrefix('PS_SL');
     }
 
