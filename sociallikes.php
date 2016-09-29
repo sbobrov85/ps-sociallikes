@@ -80,7 +80,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.6.2';
+        $this->version = '0.6.3';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
@@ -206,7 +206,7 @@ class SocialLikes extends Module
 
         $this->clearTemplatesCache();
 
-        Tools::redirectAdmin($this->getAdminLink());
+        Tools::redirectAdmin(ModuleHelper::generateAdminLink($this));
     }
 
     /**
@@ -512,7 +512,7 @@ class SocialLikes extends Module
         $helper = new HelperForm();
 
         $helper->submit_action = 'submitSocialLikes';
-        $helper->currentIndex = $this->getAdminLink(false);
+        $helper->currentIndex = ModuleHelper::generateAdminLink($this, false);
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFieldsValues()
