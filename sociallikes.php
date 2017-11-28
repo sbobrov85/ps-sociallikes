@@ -100,6 +100,11 @@ class SocialLikes extends Module
         'id_attr' => '',
     );
 
+    /**
+     * Contains cache prefix for options part.
+     */
+    const OPTIONS_CACHE_PREFIX = 'sociallikes_options';
+
     public function __construct()
     {
         $this->name = 'sociallikes';
@@ -170,6 +175,7 @@ class SocialLikes extends Module
     {
         $this->registerHook('header');
         $this->registerHook('displayRightColumnProduct');
+        $this->registerHook('displayFooter');
 
         $this->registerHook('displaySocialLikes');
     }
@@ -586,12 +592,18 @@ class SocialLikes extends Module
 
     /**
      * Get product properties required for module display
-     * @param mixed $product prestashop product object
      * @return array
      */
-    protected function getProductProperties($product)
+    protected function getProductProperties()
     {
+        // get generic item data and validate it.
+        $product = $this->context->controller->getProduct();
+        if (!Validate::isLoadedObject($product)) {
+            return array();
+        }
+
         $properties = array(
+            'id' => isset($product->id) ? $product->id : null,
             'price' => Tools::ps_round(
                 $product->getPrice(
                     !Product::getTaxCalculationMethod(
@@ -623,42 +635,28 @@ class SocialLikes extends Module
      */
     public function hookDisplayHeader($params)
     {
-        if (!isset($this->context->controller->php_self) ||
-            !in_array(
-                $this->context->controller->php_self,
-                array('product', 'products-comparison')
-            )
-        ) {
-            return;
+        $phpSelf = isset($this->context->controller->php_self) ?
+            $this->context->controller->php_self : null;
+
+        switch ($phpSelf) {
+            case 'product':
+                $properties = $this->getProductProperties();
+                break;
+            default:
+                $properties = array();
         }
 
         $this->addAssets();
 
-        if ($this->context->controller->php_self == 'product') {
-            $product = $this->context->controller->getProduct();
-            if (!Validate::isLoadedObject($product)) {
-                return;
-            }
-
-            $cacheId = 'sociallikes_header|'
-                . (!empty($product->id) ? $product->id : '');
-
-            // try load from cache or get data
-            if (!$this->isCached(
-                'sociallikes_header.tpl',
-                $this->getCacheId($cacheId)
-            )) {
-                $this->context->smarty->assign(
-                    $this->getProductProperties($product)
-                );
-            }
+        if (!empty($properties)) {
+            $this->context->smarty->assign($properties);
+            return $this->display(
+                __FILE__,
+                'sociallikes_header.tpl'
+            );
         }
 
-        return $this->display(
-            __FILE__,
-            'sociallikes_header.tpl',
-            $this->getCacheId($cacheId)
-        );
+        return;
     }
 
     /**
@@ -705,17 +703,17 @@ class SocialLikes extends Module
                     );
                     $values['sociallikes'][$networkName][$valueName] = $value;
                 }
+                $specificOptions = array();
                 if (!empty($networkProperties['options']) &&
                     is_array($networkProperties['options'])
                 ) {
-                    $specificOptions = array();
                     foreach (array_keys($networkProperties['options']) as $optionName) {
                         $specificOptions[$optionName] = ModuleHelper::getConfigFieldValue(
                             $networkName . '_' . $optionName
                         );
                     }
-                    $values['sociallikes'][$networkName]['specific'] = $specificOptions;
                 }
+                $values['sociallikes'][$networkName]['specific'] = $specificOptions;
             }
         }
 
@@ -732,25 +730,13 @@ class SocialLikes extends Module
      */
     public function hookDisplaySocialLikes()
     {
-        if (!isset($this->context->controller) ||
-            !method_exists($this->context->controller, 'getProduct')
-        ) {
-            return;
-        }
-
-        $product = $this->context->controller->getProduct();
-
-        $cacheId = 'sociallikes|'
-            . (!empty($product->id) ? $product->id : '');
-
         $this->context->smarty->assign(
             $this->getConfigFieldValuesForTemplate()
         );
 
         return $this->display(
             __FILE__,
-            'sociallikes.tpl',
-            $this->getCacheId($cacheId)
+            'sociallikes.tpl'
         );
     }
 
