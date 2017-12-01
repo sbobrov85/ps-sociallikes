@@ -24,17 +24,12 @@
 *   International Registered Trademark & Property of PrestaShop SA
 */
 
-if (!class_exists('ModuleHelper')) {
-    require_once 'helpers/ModuleHelper.php';
-}
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
 class SocialLikes extends Module
 {
-
     /**
      * @var array settings list for supported social networks
      */
@@ -105,6 +100,11 @@ class SocialLikes extends Module
      */
     const OPTIONS_CACHE_PREFIX = 'sociallikes_options';
 
+    /**
+     * Contains settings prefix for options.
+     */
+    private static $SETTINGS_PREFIX = '';
+
     public function __construct()
     {
         $this->name = 'sociallikes';
@@ -127,7 +127,96 @@ class SocialLikes extends Module
                 . ' product page.'
         );
 
-        ModuleHelper::setSettingsPrefix('PS_SL');
+        self::setSettingsPrefix('PS_SL');
+    }
+
+    /**
+     * Set class property for settings prefix
+     * @param string $settingsPrefix settings prefix
+     * @throws Exception if settingsPrefix is empty
+     */
+    public static function setSettingsPrefix($settingsPrefix)
+    {
+        if (empty($settingsPrefix)) {
+            throw new Exception('Settings prefix require non empty value!');
+        }
+
+        $settingsPrefix = rtrim($settingsPrefix, '_') . '_';
+        self::$SETTINGS_PREFIX = Tools::strtoupper($settingsPrefix);
+    }
+
+    /**
+     * Build module settings key
+     * @param string $paramName param name
+     * @return string full settings key
+     * @throws Exception if settings prefix not set
+     */
+    public static function buildSettingsKey($paramName)
+    {
+        if (empty(self::$SETTINGS_PREFIX)) {
+            throw new Exception('Requre settings prefix for using method!');
+        }
+
+        return self::$SETTINGS_PREFIX . Tools::strtoupper($paramName);
+    }
+
+    /**
+     * Get config field value by param name
+     * @param string $paramName param name
+     * @return mixed config value
+     * @throws Exception if param name is empty
+     */
+    public static function getConfigFieldValue($paramName)
+    {
+        if (empty($paramName)) {
+            throw new Exception('Require not empty param name!');
+        }
+
+        $settingsKey = self::buildSettingsKey($paramName);
+
+        return Tools::getValue(
+            $settingsKey,
+            Configuration::get($settingsKey)
+        );
+    }
+
+    /**
+     * Set config field value by param name
+     * @param string $paramName param name
+     * @param mixed $value value for set, if null then read from request
+     * @throws Exception if param name is empty
+     */
+    public static function setConfigFieldValue($paramName, $value = null)
+    {
+        if (empty($paramName)) {
+            throw new Exception('Require not empty param name!');
+        }
+
+        $settingsKey = self::buildSettingsKey($paramName);
+
+        if (!isset($value)) {
+            $value = Tools::getValue($settingsKey);
+        }
+
+        Configuration::updateValue($settingsKey, $value);
+    }
+
+    /**
+     * Generate admin link
+     * @param ModuleCore $module module class with properties
+     * @param bool $withToken get link with token or not (default true)
+     * @return string
+     */
+    public static function generateAdminLink(ModuleCore $module, $withToken = true)
+    {
+        $link = Context::getContext()->link;
+
+        $adminLink = $link->getAdminLink('AdminModules', $withToken)
+            .'&conf=6&configure=' . $module->name
+            .'&tab_module=' . $module->tab
+            .'&module_name=' . $module->name;
+
+        return $adminLink;
     }
 
     /**
@@ -152,16 +241,16 @@ class SocialLikes extends Module
     {
         // update general tab default options
         foreach (self::$generalTabOptions as $optionsName => $optionsDefault) {
-            ModuleHelper::setConfigFieldValue($optionsName, $optionsDefault);
+            self::setConfigFieldValue($optionsName, $optionsDefault);
         }
 
         // update network default options
         foreach (self::$networks as $networkName => $networkProperties) {
-            ModuleHelper::setConfigFieldValue(
+            self::setConfigFieldValue(
                 $networkName,
                 (int) !empty($networkProperties['enabled_by_default'])
             );
-            ModuleHelper::setConfigFieldValue(
+            self::setConfigFieldValue(
                 $networkName . '_text',
                 $networkName
             );
@@ -236,7 +325,7 @@ class SocialLikes extends Module
 
         $this->clearTemplatesCache();
 
-        Tools::redirectAdmin(ModuleHelper::generateAdminLink($this));
+        Tools::redirectAdmin(self::generateAdminLink($this));
     }
 
     /**
@@ -277,7 +366,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'select',
             'label' => $this->l('Buttons style'),
-            'name' => ModuleHelper::buildSettingsKey('style'),
+            'name' => self::buildSettingsKey('style'),
             'options' => array(
                 'query' => $stylesValues,
                 'id' => 'id',
@@ -291,7 +380,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'select',
             'label' => $this->l('Layout'),
-            'name' => ModuleHelper::buildSettingsKey('layout'),
+            'name' => self::buildSettingsKey('layout'),
             'options' => array(
                 'query' => array(
                     array(
@@ -328,7 +417,7 @@ class SocialLikes extends Module
             $fields[] = array(
                 'type' => 'switch',
                 'label' => $switchLabel,
-                'name' => ModuleHelper::buildSettingsKey($switchName),
+                'name' => self::buildSettingsKey($switchName),
                 'values' => array(
                     array(
                         'id' => 'no',
@@ -349,7 +438,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('ID attribute'),
-            'name' => ModuleHelper::buildSettingsKey('id_attr'),
+            'name' => self::buildSettingsKey('id_attr'),
             'tab' => 'general'
         );
 
@@ -370,7 +459,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'switch',
             'label' => $this->l('Display button'),
-            'name' => ModuleHelper::buildSettingsKey($networkName),
+            'name' => self::buildSettingsKey($networkName),
             'values' => array(
                 array(
                     'id' => Tools::strtolower($networkName).'_active_on',
@@ -389,14 +478,14 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Text'),
-            'name' => ModuleHelper::buildSettingsKey($networkName . '_text'),
+            'name' => self::buildSettingsKey($networkName . '_text'),
             'tab' => $networkName
         );
 
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Title'),
-            'name' => ModuleHelper::buildSettingsKey($networkName . '_title'),
+            'name' => self::buildSettingsKey($networkName . '_title'),
             'tab' => $networkName
         );
 
@@ -414,7 +503,7 @@ class SocialLikes extends Module
                     }
 
                     $field['label'] = $this->l($optionParams['label']);
-                    $field['name'] = ModuleHelper::buildSettingsKey(
+                    $field['name'] = self::buildSettingsKey(
                         $networkName . '_' . $optionName
                     );
                     $field['tab'] = $networkName;
@@ -427,7 +516,7 @@ class SocialLikes extends Module
         $fields[] = array(
             'type' => 'text',
             'label' => $this->l('Sort priority'),
-            'name' => ModuleHelper::buildSettingsKey($networkName . '_sort'),
+            'name' => self::buildSettingsKey($networkName . '_sort'),
             'tab' => $networkName
         );
 
@@ -467,11 +556,11 @@ class SocialLikes extends Module
 
         switch ($method) {
             case 'update':
-                ModuleHelper::setConfigFieldValue($paramName);
+                self::setConfigFieldValue($paramName);
                 break;
             default:
-                $settingsKey = ModuleHelper::buildSettingsKey($paramName);
-                $result[$settingsKey] = ModuleHelper::getConfigFieldValue($paramName);
+                $settingsKey = self::buildSettingsKey($paramName);
+                $result[$settingsKey] = self::getConfigFieldValue($paramName);
         }
 
         return $result;
@@ -542,7 +631,7 @@ class SocialLikes extends Module
         $helper = new HelperForm();
 
         $helper->submit_action = 'submitSocialLikes';
-        $helper->currentIndex = ModuleHelper::generateAdminLink($this, false);
+        $helper->currentIndex = self::generateAdminLink($this, false);
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFieldsValues()
@@ -576,7 +665,7 @@ class SocialLikes extends Module
         );
 
         // add selected buttons css
-        $style = ModuleHelper::getConfigFieldValue('style');
+        $style = self::getConfigFieldValue('style');
         if (!$style || !in_array($style, self::$supportedStyles)) {
             $style = 'classic';
         }
@@ -672,7 +761,7 @@ class SocialLikes extends Module
 
         // get general options
         foreach (array_keys(self::$generalTabOptions) as $optionName) {
-            $values['properties'][$optionName] = ModuleHelper::getConfigFieldValue($optionName);
+            $values['properties'][$optionName] = self::getConfigFieldValue($optionName);
         }
 
         // additional options
@@ -695,10 +784,10 @@ class SocialLikes extends Module
 
         // build enabled social network list
         foreach (self::$networks as $networkName => $networkProperties) {
-            $isDisplay = ModuleHelper::getConfigFieldValue($networkName);
+            $isDisplay = self::getConfigFieldValue($networkName);
             if ($isDisplay) {
                 foreach (array('text', 'title', 'sort') as $valueName) {
-                    $value = ModuleHelper::getConfigFieldValue(
+                    $value = self::getConfigFieldValue(
                         $networkName . '_' . $valueName
                     );
                     $values['sociallikes'][$networkName][$valueName] = $value;
@@ -708,7 +797,7 @@ class SocialLikes extends Module
                     is_array($networkProperties['options'])
                 ) {
                     foreach (array_keys($networkProperties['options']) as $optionName) {
-                        $specificOptions[$optionName] = ModuleHelper::getConfigFieldValue(
+                        $specificOptions[$optionName] = self::getConfigFieldValue(
                             $networkName . '_' . $optionName
                         );
                     }
