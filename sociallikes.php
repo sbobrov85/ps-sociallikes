@@ -109,12 +109,12 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.6.4';
+        $this->version = '1.0.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
-            'min' => '1.6',
-            'max' => _PS_VERSION_
+            'min' => '1.6.1',
+            'max' => '1.6.1.17'
         );
         $this->bootstrap = true;
 
