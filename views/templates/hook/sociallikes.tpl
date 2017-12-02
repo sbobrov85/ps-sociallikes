@@ -27,16 +27,17 @@
 {/if}
 
 <div
-    {($properties.block_classes) ? "class=\"`$properties.block_classes`\"" : ''}
-    {($properties.id_attr) ? "id=\"`$properties.id_attr`\"" : ''}
-    data-counters="{($properties.counters) ? 'yes' : 'no'}"
-    data-zeroes="{($properties.zeroes) ? 'yes' : 'no'}"
-    {($properties.layout == 'single') ? "data-single-title=\"`$properties.single_title`\"" : ''}
+    {if $properties.block_classes}
+        class="{{$properties.block_classes}}"
+    {/if}
+    {if $properties.id_attr}
+        id="{{$properties.id_attr}}"
+    {/if}
 >
     {foreach $sociallikes as $networkName => $networkProperties}
     <div
-        class="{$networkName}"
-        {($networkProperties.title) ? "title=\"`$networkProperties.title`\"" : ''}
+        data-service="{$networkName}"
+        {($networkProperties.title) ? "title=`$networkProperties.title`" : ''}
         {if $networkProperties.specific}
             {foreach $networkProperties.specific as $specificName => $specificValue}
                 data-{$specificName}="{$specificValue}"

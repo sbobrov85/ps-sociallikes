@@ -1,28 +1,21 @@
 <?php
-/**
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Open Software License (OSL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/osl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*   @author    PrestaShop SA <contact@prestashop.com>
-*   @copyright 2007-2015 PrestaShop SA
-*   @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
-*   International Registered Trademark & Property of PrestaShop SA
-*/
+/*
+ * Copyright (C) 2017 sbobrov85 <sbobrov85@gmail.com>.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -47,13 +40,17 @@ class SocialLikes extends Module
                 )
             )
         ),
-        'mailru' => array(),
+        'google' => array(),
         'vkontakte' => array(
             'enabled_by_default' => true
         ),
         'odnoklassniki' => array(
             'enabled_by_default' => true
         ),
+        'telegram' => array(
+            'enabled_by_default' => true
+        ),
+        'linkedin' => array(),
         'plusone' => array(),
         'pinterest' => array(
             'options' => array(
@@ -78,21 +75,34 @@ class SocialLikes extends Module
      */
     protected static $supportedStyles = array(
         'birman',
-        'classic',
-        'flat'
+        'flat',
+        'light'
     );
 
     /**
      * @var array options list for general tab (key => default value)
      */
     protected static $generalTabOptions = array(
-        'style' => 'classic',
+        'style' => 'birman',
         'header' => 1,
         'layout' => 'default',
-        'counters' => 1,
-        'zeroes' => 0,
+        'server' => 'unpkg.com',
         'autoinit' => 1,
         'id_attr' => '',
+    );
+
+    /**
+     * @var array base urls for server options
+     */
+    protected static $serverBaseUrl = array(
+        'unpkg.com' => array(
+            'css' => '/social-likes-next/dist',
+            'js' => '/social-likes-next/dist'
+        ),
+        'cdn.jsdelivr.net' => array(
+            'css' => '/npm/social-likes-next/dist',
+            'js' => '/npm/social-likes-next/dist'
+        )
     );
 
     /**
@@ -109,11 +119,11 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '0.6.4';
+        $this->version = '2.0.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
-            'min' => '1.6',
+            'min' => '1.7',
             'max' => _PS_VERSION_
         );
         $this->bootstrap = true;
@@ -128,6 +138,8 @@ class SocialLikes extends Module
         );
 
         self::setSettingsPrefix('PS_SL');
+
+        $this->_path = 'modules' . DIRECTORY_SEPARATOR . $this->name;
     }
 
     /**
@@ -262,9 +274,8 @@ class SocialLikes extends Module
      */
     protected function registerHooks()
     {
-        $this->registerHook('header');
-        $this->registerHook('displayRightColumnProduct');
-        $this->registerHook('displayFooter');
+        $this->registerHook('displayHeader');
+        $this->registerHook('displayReassurance');
 
         $this->registerHook('displaySocialLikes');
     }
@@ -372,7 +383,7 @@ class SocialLikes extends Module
                 'id' => 'id',
                 'name' => 'name'
             ),
-            'default_value' => 'classic',
+            'default_value' => 'birman',
             'tab' => 'general'
         );
 
@@ -392,10 +403,6 @@ class SocialLikes extends Module
                         'name' => $this->l('Vertical (Vertical line)')
                     ),
                     array(
-                        'id' => 'single',
-                        'name' => $this->l('Single (Show only one icon)')
-                    ),
-                    array(
                         'id' => 'notext',
                         'name' => $this->l('Icons (No text)')
                     )
@@ -406,11 +413,31 @@ class SocialLikes extends Module
             'tab' => 'general'
         );
 
+        // add options for resources server
+        $fields[] = array(
+            'type' => 'select',
+            'label' => $this->l('Resources server'),
+            'name' => self::buildSettingsKey('server'),
+            'options' => array(
+                'query' => array(
+                    array(
+                        'id' => 'unpkg.com',
+                        'name' => 'unpkg.com'
+                    ),
+                    array(
+                        'id' => 'cdn.jsdelivr.net',
+                        'name' => 'cdn.jsdelivr.net'
+                    ),
+                ),
+                'id' => 'id',
+                'name' => 'name',
+            ),
+            'tab' => 'general'
+        );
+
         // switch options
         $switches = array(
             'header' => $this->l('Show module header'),
-            'counters' => $this->l('Show counters'),
-            'zeroes' => $this->l('Show zero counters'),
             'autoinit' => $this->l('Use autoinit')
         );
         foreach ($switches as $switchName => $switchLabel) {
@@ -660,22 +687,35 @@ class SocialLikes extends Module
     protected function addAssets()
     {
         // add common css
-        $this->context->controller->addCss(
-            $this->_path . 'css/social-likes_all.css'
+        $this->context->controller->registerStylesheet(
+            'modules-sociallikes-all',
+            $this->_path . '/css/social-likes_all.css'
         );
+
+        // get resources server
+        $server = self::getConfigFieldValue('server');
+        if (!$server || !in_array($server, array_keys(self::$serverBaseUrl))) {
+            $server = self::$generalTabOptions['server'];
+        }
 
         // add selected buttons css
         $style = self::getConfigFieldValue('style');
         if (!$style || !in_array($style, self::$supportedStyles)) {
-            $style = 'classic';
+            $style = self::$generalTabOptions['style'];
         }
-        $this->context->controller->addCss(
-            $this->_path . "css/social-likes_$style.css"
+        $cssBase = self::$serverBaseUrl[$server]['css'];
+        $this->context->controller->registerStylesheet(
+            'modules-sociallikes',
+            "//$server{$cssBase}/social-likes_$style.css",
+            array('server' => 'remote')
         );
 
         // add common js
-        $this->context->controller->addJS(
-            $this->_path . 'js/social-likes.min.js'
+        $jsBase = self::$serverBaseUrl[$server]['js'];
+        $this->context->controller->registerJavascript(
+            'modules-sociallikes',
+            "//$server{$jsBase}/social-likes.min.js",
+            array('server' => 'remote')
         );
     }
 
@@ -719,10 +759,9 @@ class SocialLikes extends Module
 
     /**
      * Hook action for add information into header
-     * @param array $params
      * @return string
      */
-    public function hookDisplayHeader($params)
+    public function hookDisplayHeader()
     {
         $phpSelf = isset($this->context->controller->php_self) ?
             $this->context->controller->php_self : null;
@@ -773,10 +812,6 @@ class SocialLikes extends Module
             $blockClasses[] = 'social-likes_' . $values['properties']['layout'];
         }
         $values['properties']['block_classes'] = implode(' ', $blockClasses);
-
-        if ($values['properties']['layout'] == 'single') {
-            $values['properties']['single_title'] = $this->l('Share');
-        }
 
         if ($values['properties']['header']) {
             $values['properties']['header_title'] = $this->l('Share with');
@@ -833,7 +868,7 @@ class SocialLikes extends Module
      * Hook for display social likes buttons on product page
      * @return string
      */
-    public function hookDisplayRightColumnProduct()
+    public function hookdisplayReassurance()
     {
         return $this->hookDisplaySocialLikes();
     }
