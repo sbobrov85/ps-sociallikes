@@ -660,7 +660,7 @@ class SocialLikes extends Module
         // add selected buttons css
         $style = self::getConfigFieldValue('style');
         if (!$style || !in_array($style, self::$supportedStyles)) {
-            $style = 'classic';
+            $style = self::$generalTabOptions['style'];
         }
         $this->context->controller->addCss(
             $this->_path . "css/social-likes_$style.css"
