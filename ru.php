@@ -19,6 +19,9 @@
 
 global $_MODULE;
 $_MODULE = array();
+$_MODULE['<{sociallikes}prestashop>sociallikes_d6cca51a076e808b2f547b8f8d88836b'] = 'Через (сайт или вы сами)';
+$_MODULE['<{sociallikes}prestashop>sociallikes_8efeb15eedae44410407c50b129d3bff'] = 'Связь (любой другой твиттер)';
+$_MODULE['<{sociallikes}prestashop>sociallikes_96caaf15251332a8e52680cf5a1f3ae3'] = 'Специфический url изображения';
 $_MODULE['<{sociallikes}prestashop>sociallikes_5f76f2bb37e79ff5a79a7cb78412d7d9'] = 'Социальные закладки';
 $_MODULE['<{sociallikes}prestashop>sociallikes_c888438d14855d7d96a2724ee9c306bd'] = 'Настройки обновлены';
 $_MODULE['<{sociallikes}prestashop>sociallikes_ab9c045a3bcbd8a9c82d7013cf9486f0'] = 'Основные';

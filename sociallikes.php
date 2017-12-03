@@ -24,6 +24,7 @@ if (!defined('_PS_VERSION_')) {
 class SocialLikes extends Module
 {
     /**
+     * ! Do not touch $this->l(...) - it's hack for localization via admin panel
      * @var array settings list for supported social networks
      */
     protected static $networks = array(
@@ -32,15 +33,14 @@ class SocialLikes extends Module
             'options' => array(
                 'via' => array(
                     'type' => 'text',
-                    'label' => 'Via (site or your own)'
+                    'label' => 'Via (site or your own)' //$this->l('Via (site or your own)');
                 ),
                 'related' => array(
                     'type' => 'text',
-                    'label' => 'Related (any other twitter)'
+                    'label' => 'Related (any other twitter)' //$this->l('Related (any other twitter)');
                 )
             )
         ),
-        'google' => array(),
         'vkontakte' => array(
             'enabled_by_default' => true
         ),
@@ -56,7 +56,7 @@ class SocialLikes extends Module
             'options' => array(
                 'media' => array(
                     'type' => 'text',
-                    'label' => 'Specify image url'
+                    'label' => 'Specify image url' //$this->l('Specify image url');
                 )
             )
         ),
@@ -119,7 +119,7 @@ class SocialLikes extends Module
     {
         $this->name = 'sociallikes';
         $this->tab = 'advertising_marketing';
-        $this->version = '2.0.0';
+        $this->version = '2.1.0';
         $this->author = 'sbobrov85';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array(
