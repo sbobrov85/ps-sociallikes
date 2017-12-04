@@ -1,21 +1,4 @@
 <?php
-/*
- * Copyright (C) 2017 sbobrov85 <sbobrov85@gmail.com>.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
 
 global $_MODULE;
 $_MODULE = array();
@@ -31,6 +14,7 @@ $_MODULE['<{sociallikes}prestashop>sociallikes_8a875afdf85df7bd5bc1fbd2e1ed698f'
 $_MODULE['<{sociallikes}prestashop>sociallikes_618dd7e40a06ad82149a718fa5f1e7a3'] = 'Вертикально (в столбец)';
 $_MODULE['<{sociallikes}prestashop>sociallikes_a8a59bd194600c1872bdc45c3b7df967'] = 'Только иконки';
 $_MODULE['<{sociallikes}prestashop>sociallikes_294caaaf211f89a039a0006096719d78'] = 'Сервер ресурсов';
+$_MODULE['<{sociallikes}prestashop>sociallikes_760dc33c5e7fccef45b4300a370c2f24'] = 'Добавить meta теги товара';
 $_MODULE['<{sociallikes}prestashop>sociallikes_33efde0bfd5f0f7f27a59ae78acd1a7c'] = 'Показать заголовок';
 $_MODULE['<{sociallikes}prestashop>sociallikes_3e6d3e92257b7498991fc2fa0c497c65'] = 'Автоинициализация';
 $_MODULE['<{sociallikes}prestashop>sociallikes_bafd7322c6e97d25b6299b5d6fe8920b'] = 'Нет';

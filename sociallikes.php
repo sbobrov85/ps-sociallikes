@@ -86,6 +86,7 @@ class SocialLikes extends Module
         'style' => 'birman',
         'header' => 1,
         'layout' => 'default',
+        'metatags' => 0,
         'server' => 'unpkg.com',
         'autoinit' => 1,
         'id_attr' => '',
@@ -437,6 +438,7 @@ class SocialLikes extends Module
 
         // switch options
         $switches = array(
+            'metatags' => $this->l('Add product metatags'),
             'header' => $this->l('Show module header'),
             'autoinit' => $this->l('Use autoinit')
         );
@@ -768,7 +770,11 @@ class SocialLikes extends Module
 
         switch ($phpSelf) {
             case 'product':
-                $properties = $this->getProductProperties();
+                if (self::getConfigFieldValue('metatags')) {
+                    $properties = $this->getProductProperties();
+                } else {
+                    $properties = array();
+                }
                 break;
             default:
                 $properties = array();
