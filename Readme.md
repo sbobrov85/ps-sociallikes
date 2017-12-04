@@ -28,7 +28,7 @@ or download as zip archives, extract and rename directory to sociallikes.
 
 ## Thanks
 
-* [Artem Sapegin](https://github.com/sapegin) for [Social Likes](https://github.com/sapegin/social-likes/).
+* [Artem Sapegin](https://github.com/sapegin) for [Social Likes Next](https://github.com/sapegin/social-likes-next).
 * [Elyounssi Wahib](https://www.iconfinder.com/Wahib) for module icon.
 
 ## Support
