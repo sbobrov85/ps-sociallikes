@@ -1,6 +1,8 @@
 # Prestashop Social likes (Share) buttons
 
-![Released](https://img.shields.io/badge/status-released-green.svg)
+![Released](https://img.shields.io/badge/status-released-green.svg) ![Legacy](https://img.shields.io/badge/status-legacy-yellow.svg)
+
+**This is Prestashop 1.6 legacy branch! See actual [master](https://github.com/sbobrov85/sociallikes/tree/master) branch for Prestashop 1.7!**
 
 Prestashop module for add social share buttons like: Facebook, Vkontakte, Twitter, Odnoklassniki, Google+, Pinterest, etc on products page.
 
