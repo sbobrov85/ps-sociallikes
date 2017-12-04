@@ -17,13 +17,12 @@ Support two language:
 or download as zip archives, extract and rename directory to sociallikes.
 1. Create zip or tar.gz archive containing sociallikes folder
 1. Logging with admin privileges in you Prestashop backend
-1. Goto "Modules and Services"
-1. Press "Add a new module" top toolbar button
+1. Goto "Modules & Services" (Menu item "Modules")
+1. Press "Upload a module" top toolbar button
 1. Choose a file (downloaded zip or tar.gz)
-1. Press "Upload this module"
-1. Wait when load process finished
-1. Goto "Advertising and Marketing" section
-1. Search "Social likes" and press "Install"
+1. Wait when load and install process finished
+1. Click "Installed modules" link
+1. Search "Social likes"
 1. Configure.
 
 ## Thanks
