@@ -83,6 +83,7 @@ class SocialLikes extends Module
         'style' => 'classic',
         'header' => 1,
         'layout' => 'default',
+        'metatags' => 0,
         'counters' => 1,
         'zeroes' => 0,
         'autoinit' => 1,
@@ -402,6 +403,7 @@ class SocialLikes extends Module
 
         // switch options
         $switches = array(
+            'metatags' => $this->l('Add product metatags'),
             'header' => $this->l('Show module header'),
             'counters' => $this->l('Show counters'),
             'zeroes' => $this->l('Show zero counters'),
@@ -723,7 +725,11 @@ class SocialLikes extends Module
 
         switch ($phpSelf) {
             case 'product':
-                $properties = $this->getProductProperties();
+                if (self::getConfigFieldValue('metatags')) {
+                    $properties = $this->getProductProperties();
+                } else {
+                    $properties = array();
+                }
                 break;
             default:
                 $properties = array();
